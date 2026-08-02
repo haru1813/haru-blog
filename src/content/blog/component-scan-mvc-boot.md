@@ -1,6 +1,6 @@
 ---
 title: Spring은 @Controller를 어떻게 찾아낼까 — 컴포넌트 스캔, MVC vs Boot
-description: @Controller 하나 붙였을 뿐인데 빈으로 등록되는 이유. 컴포넌트 스캔의 원리와, Spring MVC와 Spring Boot의 스캔 방식 차이를 정리한다.
+description: "@Controller 하나 붙였을 뿐인데 빈으로 등록되는 이유. 컴포넌트 스캔의 원리와, Spring MVC와 Spring Boot의 스캔 방식 차이를 정리한다."
 pubDate: 2026-08-02
 category: backend
 ---
