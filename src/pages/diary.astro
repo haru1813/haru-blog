@@ -1,4 +1,6 @@
 ---
+export const prerender = false; // 서버 렌더 → IP 검사(미들웨어) 적용 대상
+
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import matter from 'gray-matter';
@@ -11,7 +13,7 @@ import { SITE_TITLE } from '../consts';
 const password = import.meta.env.DIARY_PASSWORD || 'change-this-to-a-strong-password';
 const diaryDir = join(process.cwd(), 'src/diary');
 
-type Entry = { title: string; date: string; html: string };
+type Entry = { title: string; date: string; time: string; html: string; comments: { by: string; text: string }[] };
 let entries: Entry[] = [];
 
 if (existsSync(diaryDir)) {
@@ -23,15 +25,23 @@ if (existsSync(diaryDir)) {
 		const raw = readFileSync(join(diaryDir, f), 'utf-8');
 		const { data, content } = matter(raw);
 		const slug = f.replace(/\.md$/, '');
+
+		let dateStr: string;
+		const dv = data.date;
+		if (dv instanceof Date) dateStr = dv.toISOString().slice(0, 10);
+		else if (dv) dateStr = String(dv).slice(0, 10);
+		else dateStr = slug.slice(0, 10);
+
 		return {
 			title: (data.title as string) || slug,
-			date: String(data.date || slug),
+			date: dateStr,
+			time: data.time ? String(data.time) : '',
 			html: marked.parse(content) as string,
+			comments: Array.isArray(data.comments) ? data.comments : [],
 		};
 	});
 }
 
-// 일기 전체를 비밀번호로 암호화 → 페이지엔 암호문만 심는다.
 const cipher = CryptoJS.AES.encrypt(JSON.stringify(entries), password).toString();
 ---
 
@@ -40,26 +50,35 @@ const cipher = CryptoJS.AES.encrypt(JSON.stringify(entries), password).toString(
 	<head>
 		<BaseHead title={`일기 · ${SITE_TITLE}`} description="비공개 일기" />
 	</head>
-	<body>
+	<body class="diary-page">
 		<Header />
 		<main>
 			<div id="lock" class="lock">
-				<h1>일기 <span class="lk">🔒</span></h1>
-				<p class="hint">비공개 기록입니다. 비밀번호를 입력하세요.</p>
-				<form id="pw-form" class="pw-form">
-					<input
-						type="password"
-						id="pw"
-						placeholder="비밀번호"
-						autocomplete="current-password"
-						aria-label="비밀번호"
-					/>
-					<button type="submit">열기</button>
-				</form>
-				<p id="err" class="err" role="alert"></p>
+				<div class="lock-card">
+					<div class="lock-ico">🔒</div>
+					<h1>일기</h1>
+					<p class="hint">비공개 기록입니다. 비밀번호를 입력하세요.</p>
+					<form id="pw-form" class="pw-form">
+						<input
+							type="password"
+							id="pw"
+							placeholder="비밀번호"
+							autocomplete="current-password"
+							aria-label="비밀번호"
+						/>
+						<button type="submit">열기</button>
+					</form>
+					<p id="err" class="err" role="alert"></p>
+				</div>
 			</div>
 
-			<div id="diary" class="diary" hidden></div>
+			<section id="list-wrap" hidden>
+				<h1 class="dh">일기</h1>
+				<div id="list" class="diary-list"></div>
+			</section>
+
+			<section id="detail" class="detail" hidden></section>
+
 			<div id="data" data-cipher={cipher} hidden></div>
 		</main>
 
@@ -68,12 +87,57 @@ const cipher = CryptoJS.AES.encrypt(JSON.stringify(entries), password).toString(
 
 			const cipher = (document.getElementById('data') as HTMLElement).dataset.cipher || '';
 			const lock = document.getElementById('lock') as HTMLElement;
-			const diary = document.getElementById('diary') as HTMLElement;
+			const listWrap = document.getElementById('list-wrap') as HTMLElement;
+			const listEl = document.getElementById('list') as HTMLElement;
+			const detailEl = document.getElementById('detail') as HTMLElement;
 			const form = document.getElementById('pw-form') as HTMLFormElement;
 			const pw = document.getElementById('pw') as HTMLInputElement;
 			const err = document.getElementById('err') as HTMLElement;
 
-			type Entry = { title: string; date: string; html: string };
+			type Entry = { title: string; date: string; time: string; html: string; comments: { by: string; text: string }[] };
+
+			function fmt(date: string, time: string): string {
+				try {
+					const d = new Date(`${date}T${time || '00:00'}:00+09:00`);
+					if (isNaN(d.getTime())) return date;
+					let s = d.toLocaleDateString('ko-KR', {
+						year: 'numeric',
+						month: 'long',
+						day: 'numeric',
+						weekday: 'short',
+					});
+					if (time) {
+						s +=
+							' ' +
+							d.toLocaleTimeString('ko-KR', {
+								timeZone: 'Asia/Seoul',
+								hour: 'numeric',
+								minute: '2-digit',
+							});
+					}
+					return s;
+				} catch (_) {
+					return date;
+				}
+			}
+
+			function esc(s: string): string {
+				const div = document.createElement('div');
+				div.textContent = s;
+				return div.innerHTML;
+			}
+
+			// 미리보기: 본문 첫 문단 텍스트 추출
+			function preview(html: string): string {
+				const div = document.createElement('div');
+				div.innerHTML = html;
+				const t = (div.textContent || '').replace(/\s+/g, ' ').trim();
+				return t.length > 90 ? t.slice(0, 90) + '…' : t;
+			}
+
+			function initial(name: string): string {
+				return (name || '?').trim().charAt(0);
+			}
 
 			form.addEventListener('submit', (e) => {
 				e.preventDefault();
@@ -89,65 +153,174 @@ const cipher = CryptoJS.AES.encrypt(JSON.stringify(entries), password).toString(
 					pw.value = '';
 					return;
 				}
-				render(entries);
+				showList(entries);
 			});
 
-			function render(entries: Entry[]) {
+			function showList(entries: Entry[]) {
 				if (!entries.length) {
-					diary.innerHTML = '<p class="empty">아직 일기가 없어요. src/diary/ 에 .md 파일을 추가하세요.</p>';
+					listEl.innerHTML =
+						'<p class="empty">아직 일기가 없어요. src/diary/ 에 .md 파일을 추가하세요.</p>';
 				} else {
-					diary.innerHTML = entries
-						.map(
-							(en) => `
-							<article class="entry">
-								<div class="ed">${en.date}</div>
-								<h2>${en.title}</h2>
-								<div class="prose">${en.html}</div>
-							</article>`,
-						)
+					listEl.innerHTML = entries
+						.map((en, i) => {
+							const cc = en.comments ? en.comments.length : 0;
+							return `
+							<button class="d-item" data-i="${i}">
+								<span class="d-date">${fmt(en.date, en.time)}</span>
+								<span class="d-title">${esc(en.title)}</span>
+								<span class="d-prev">${esc(preview(en.html))}</span>
+								${cc ? `<span class="d-badge">💬 ${cc}</span>` : ''}
+							</button>`;
+						})
 						.join('');
+					listEl.querySelectorAll<HTMLButtonElement>('.d-item').forEach((btn) => {
+						btn.addEventListener('click', () => showDetail(entries[Number(btn.dataset.i)]));
+					});
 				}
 				lock.hidden = true;
-				diary.hidden = false;
+				detailEl.hidden = true;
+				listWrap.hidden = false;
+			}
+
+			function showDetail(en: Entry) {
+				const cs = en.comments || [];
+				const commentsHtml = cs.length
+					? `<div class="comments">
+							<div class="ct">댓글 ${cs.length}</div>
+							${cs
+								.map(
+									(c) => `
+								<div class="cmt">
+									<div class="c-ava">${esc(initial(c.by))}</div>
+									<div class="c-body">
+										<div class="cby">${esc(c.by)}</div>
+										<div class="ctext">${esc(c.text)}</div>
+									</div>
+								</div>`,
+								)
+								.join('')}
+						</div>`
+					: '';
+				detailEl.innerHTML = `
+					<button class="back">← 목록으로</button>
+					<article class="d-article">
+						<div class="ed">${fmt(en.date, en.time)}</div>
+						<h2>${esc(en.title)}</h2>
+						<div class="prose">${en.html}</div>
+						${commentsHtml}
+					</article>`;
+				(detailEl.querySelector('.back') as HTMLButtonElement).addEventListener('click', () => {
+					detailEl.hidden = true;
+					listWrap.hidden = false;
+					window.scrollTo(0, 0);
+				});
+				listWrap.hidden = true;
+				detailEl.hidden = false;
+				window.scrollTo(0, 0);
 			}
 		</script>
 
-		<style>
-			.lock { max-width: 440px; margin: 7vh 0; }
-			.lock h1 { font-size: 1.8rem; }
-			.lk { font-size: 1.3rem; }
-			.hint { color: rgb(var(--gray)); font-size: 0.9rem; margin: 4px 0 22px; }
+		<style is:global>
+			.diary-page main { max-width: none; }
+			.diary-page [hidden] { display: none !important; } /* hidden 속성이 항상 이기도록 */
+
+			/* 잠금 화면 */
+			.lock:not([hidden]) { display: flex; justify-content: center; padding: 6vh 0; }
+			.lock-card {
+				width: 100%; max-width: 420px;
+				background: var(--card); border: 1px solid var(--border);
+				border-radius: 18px; padding: 34px 30px; text-align: center;
+			}
+			.lock-ico { font-size: 2rem; margin-bottom: 10px; }
+			.lock-card h1 { font-size: 1.5rem; margin: 0 0 6px; }
+			.lock-card .hint { color: rgb(var(--gray)); font-size: 0.88rem; margin: 0 0 22px; }
 			.pw-form { display: flex; gap: 8px; }
 			.pw-form input {
-				flex: 1;
-				background: var(--card);
-				border: 1px solid var(--border);
-				border-radius: 9px;
-				padding: 10px 13px;
-				color: rgb(var(--black));
-				font-size: 0.95rem;
-				font-family: var(--mono);
+				flex: 1; background: var(--bg); border: 1px solid var(--border);
+				border-radius: 10px; padding: 11px 14px; color: rgb(var(--black));
+				font-size: 0.95rem; font-family: var(--mono);
 			}
 			.pw-form input:focus { outline: none; border-color: var(--accent); }
 			.pw-form button {
-				background: var(--accent);
-				color: #1a1206;
-				border: 0;
-				border-radius: 9px;
-				padding: 0 18px;
-				font-weight: 700;
-				cursor: pointer;
+				background: var(--accent); color: #1a1206; border: 0;
+				border-radius: 10px; padding: 0 20px; font-weight: 700; cursor: pointer;
 			}
 			.pw-form button:hover { background: var(--accent-hover); }
-			.err { color: #e0706a; font-size: 0.85rem; margin-top: 10px; min-height: 1em; }
+			.err { color: #e0706a; font-size: 0.85rem; margin: 12px 0 0; min-height: 1em; }
 
-			.diary { display: flex; flex-direction: column; gap: 44px; }
-			.entry .ed { font-family: var(--mono); font-size: 0.78rem; color: var(--accent); letter-spacing: 0.04em; }
-			.entry h2 { font-size: 1.35rem; margin: 6px 0 14px; }
-			.entry .prose { color: rgb(var(--gray-dark)); line-height: 1.85; }
-			.entry .prose :global(p) { margin-bottom: 1.2em; }
-			.entry .prose :global(hr) { margin: 1.6em 0; }
+			/* 목록 */
+			.dh { font-size: 1.85rem; font-weight: 750; margin-bottom: 28px; letter-spacing: -0.01em; }
+			.diary-list { display: flex; flex-direction: column; gap: 14px; }
+			.d-item {
+				position: relative;
+				display: flex; flex-direction: column; gap: 9px;
+				width: 100%; text-align: left;
+				background: var(--card); border: 1px solid var(--border);
+				border-radius: 16px; padding: 22px 26px;
+				cursor: pointer; color: inherit; font-family: inherit;
+				transition: transform 0.16s, border-color 0.16s, box-shadow 0.16s;
+			}
+			.d-item:hover {
+				transform: translateY(-3px);
+				border-color: var(--accent);
+				box-shadow: 0 10px 30px rgba(0, 0, 0, 0.32);
+			}
+			.d-date {
+				display: inline-flex; align-items: center; gap: 7px;
+				font-family: var(--mono); font-size: 0.73rem;
+				color: var(--accent); letter-spacing: 0.05em;
+			}
+			.d-date::before {
+				content: ''; width: 6px; height: 6px; border-radius: 50%;
+				background: var(--accent); box-shadow: 0 0 8px var(--accent);
+			}
+			.d-title { font-size: 1.22rem; color: rgb(var(--black)); font-weight: 680; line-height: 1.4; }
+			.d-prev { font-size: 0.88rem; color: rgb(var(--gray)); line-height: 1.5; }
+			.d-badge {
+				position: absolute; top: 20px; right: 22px;
+				font-size: 0.72rem; color: rgb(var(--gray-dark));
+				background: var(--bg); border: 1px solid var(--border);
+				border-radius: 999px; padding: 3px 10px;
+			}
 			.empty { color: rgb(var(--gray)); }
+
+			/* 상세 */
+			.back {
+				background: var(--card); border: 1px solid var(--border);
+				color: rgb(var(--gray-dark)); border-radius: 9px;
+				padding: 7px 14px; font-size: 0.82rem; cursor: pointer;
+				margin-bottom: 26px; font-family: var(--mono);
+			}
+			.back:hover { border-color: var(--accent); color: var(--accent); }
+			.d-article { max-width: 760px; }
+			.detail .ed { font-family: var(--mono); font-size: 0.8rem; color: var(--accent); letter-spacing: 0.04em; }
+			.detail h2 { font-size: 1.75rem; margin: 8px 0 22px; letter-spacing: -0.01em; }
+			.detail .prose { color: rgb(var(--gray-dark)); line-height: 1.95; font-size: 1.04rem; }
+			.detail .prose p { margin-bottom: 1.3em; }
+			.detail .prose hr { margin: 2em 0; border: none; border-top: 1px solid var(--border); }
+			.detail .prose strong { color: rgb(var(--black)); }
+
+			/* 댓글 */
+			.comments { margin-top: 50px; padding-top: 30px; border-top: 1px solid var(--border); }
+			.ct { font-family: var(--mono); font-size: 0.72rem; color: rgb(var(--gray)); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 18px; }
+			.cmt {
+				display: flex; gap: 13px;
+				background: var(--card); border: 1px solid var(--border);
+				border-radius: 14px; padding: 16px 18px; margin-bottom: 12px;
+			}
+			.c-ava {
+				flex: none; width: 34px; height: 34px; border-radius: 10px;
+				background: var(--accent); color: #1a1206;
+				font-weight: 800; font-size: 0.9rem;
+				display: grid; place-items: center;
+			}
+			.c-body { min-width: 0; }
+			.cby { font-size: 0.84rem; font-weight: 700; color: var(--accent); margin-bottom: 5px; }
+			.ctext { font-size: 0.93rem; color: rgb(var(--gray-dark)); line-height: 1.75; white-space: pre-wrap; }
+
+			@media (max-width: 560px) {
+				.d-badge { position: static; align-self: flex-start; margin-top: 4px; }
+			}
 		</style>
 	</body>
 </html>
