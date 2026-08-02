@@ -17,8 +17,13 @@ pnpm-debug.log*
 .env
 .env.production
 
+# 비공개 일기 원본 (배포엔 암호문만, 원본은 로컬에만)
+src/diary/
+
 # macOS-specific files
 .DS_Store
 
 # jetbrains setting folder
 .idea/
+
+.vercel

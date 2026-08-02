@@ -1,0 +1,153 @@
+---
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import matter from 'gray-matter';
+import { marked } from 'marked';
+import CryptoJS from 'crypto-js';
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import { SITE_TITLE } from '../consts';
+
+const password = import.meta.env.DIARY_PASSWORD || 'change-this-to-a-strong-password';
+const diaryDir = join(process.cwd(), 'src/diary');
+
+type Entry = { title: string; date: string; html: string };
+let entries: Entry[] = [];
+
+if (existsSync(diaryDir)) {
+	const files = readdirSync(diaryDir)
+		.filter((f) => f.endsWith('.md'))
+		.sort()
+		.reverse();
+	entries = files.map((f) => {
+		const raw = readFileSync(join(diaryDir, f), 'utf-8');
+		const { data, content } = matter(raw);
+		const slug = f.replace(/\.md$/, '');
+		return {
+			title: (data.title as string) || slug,
+			date: String(data.date || slug),
+			html: marked.parse(content) as string,
+		};
+	});
+}
+
+// 일기 전체를 비밀번호로 암호화 → 페이지엔 암호문만 심는다.
+const cipher = CryptoJS.AES.encrypt(JSON.stringify(entries), password).toString();
+---
+
+<!doctype html>
+<html lang="ko">
+	<head>
+		<BaseHead title={`일기 · ${SITE_TITLE}`} description="비공개 일기" />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<div id="lock" class="lock">
+				<h1>일기 <span class="lk">🔒</span></h1>
+				<p class="hint">비공개 기록입니다. 비밀번호를 입력하세요.</p>
+				<form id="pw-form" class="pw-form">
+					<input
+						type="password"
+						id="pw"
+						placeholder="비밀번호"
+						autocomplete="current-password"
+						aria-label="비밀번호"
+					/>
+					<button type="submit">열기</button>
+				</form>
+				<p id="err" class="err" role="alert"></p>
+			</div>
+
+			<div id="diary" class="diary" hidden></div>
+			<div id="data" data-cipher={cipher} hidden></div>
+		</main>
+
+		<script>
+			import CryptoJS from 'crypto-js';
+
+			const cipher = (document.getElementById('data') as HTMLElement).dataset.cipher || '';
+			const lock = document.getElementById('lock') as HTMLElement;
+			const diary = document.getElementById('diary') as HTMLElement;
+			const form = document.getElementById('pw-form') as HTMLFormElement;
+			const pw = document.getElementById('pw') as HTMLInputElement;
+			const err = document.getElementById('err') as HTMLElement;
+
+			type Entry = { title: string; date: string; html: string };
+
+			form.addEventListener('submit', (e) => {
+				e.preventDefault();
+				err.textContent = '';
+				let entries: Entry[];
+				try {
+					const bytes = CryptoJS.AES.decrypt(cipher, pw.value);
+					const text = bytes.toString(CryptoJS.enc.Utf8);
+					if (!text) throw new Error('empty');
+					entries = JSON.parse(text);
+				} catch (_) {
+					err.textContent = '비밀번호가 틀렸어요.';
+					pw.value = '';
+					return;
+				}
+				render(entries);
+			});
+
+			function render(entries: Entry[]) {
+				if (!entries.length) {
+					diary.innerHTML = '<p class="empty">아직 일기가 없어요. src/diary/ 에 .md 파일을 추가하세요.</p>';
+				} else {
+					diary.innerHTML = entries
+						.map(
+							(en) => `
+							<article class="entry">
+								<div class="ed">${en.date}</div>
+								<h2>${en.title}</h2>
+								<div class="prose">${en.html}</div>
+							</article>`,
+						)
+						.join('');
+				}
+				lock.hidden = true;
+				diary.hidden = false;
+			}
+		</script>
+
+		<style>
+			.lock { max-width: 440px; margin: 7vh 0; }
+			.lock h1 { font-size: 1.8rem; }
+			.lk { font-size: 1.3rem; }
+			.hint { color: rgb(var(--gray)); font-size: 0.9rem; margin: 4px 0 22px; }
+			.pw-form { display: flex; gap: 8px; }
+			.pw-form input {
+				flex: 1;
+				background: var(--card);
+				border: 1px solid var(--border);
+				border-radius: 9px;
+				padding: 10px 13px;
+				color: rgb(var(--black));
+				font-size: 0.95rem;
+				font-family: var(--mono);
+			}
+			.pw-form input:focus { outline: none; border-color: var(--accent); }
+			.pw-form button {
+				background: var(--accent);
+				color: #1a1206;
+				border: 0;
+				border-radius: 9px;
+				padding: 0 18px;
+				font-weight: 700;
+				cursor: pointer;
+			}
+			.pw-form button:hover { background: var(--accent-hover); }
+			.err { color: #e0706a; font-size: 0.85rem; margin-top: 10px; min-height: 1em; }
+
+			.diary { display: flex; flex-direction: column; gap: 44px; }
+			.entry .ed { font-family: var(--mono); font-size: 0.78rem; color: var(--accent); letter-spacing: 0.04em; }
+			.entry h2 { font-size: 1.35rem; margin: 6px 0 14px; }
+			.entry .prose { color: rgb(var(--gray-dark)); line-height: 1.85; }
+			.entry .prose :global(p) { margin-bottom: 1.2em; }
+			.entry .prose :global(hr) { margin: 1.6em 0; }
+			.empty { color: rgb(var(--gray)); }
+		</style>
+	</body>
+</html>

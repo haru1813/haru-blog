@@ -1,85 +1,132 @@
 ---
 import { SITE_TITLE } from '../consts';
-import HeaderLink from './HeaderLink.astro';
+const path = Astro.url.pathname;
+const isHome = path === '/';
+const isBlog = path.startsWith('/blog');
+const isAbout = path.startsWith('/about');
 ---
 
-<header>
-	<nav>
-		<h2><a href="/">{SITE_TITLE}</a></h2>
-		<div class="internal-links">
-			<HeaderLink href="/">Home</HeaderLink>
-			<HeaderLink href="/blog">Blog</HeaderLink>
-			<HeaderLink href="/about">About</HeaderLink>
-		</div>
-		<div class="social-links">
-			<a href="https://m.webtoo.ls/@astro" target="_blank">
-				<span class="sr-only">Follow Astro on Mastodon</span>
-				<svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32"
-					><path
-						fill="currentColor"
-						d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z"
-					></path></svg
-				>
-			</a>
-			<a href="https://twitter.com/astrodotbuild" target="_blank">
-				<span class="sr-only">Follow Astro on Twitter</span>
-				<svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32"
-					><path
-						fill="currentColor"
-						d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z"
-					></path></svg
-				>
-			</a>
-			<a href="https://github.com/withastro/astro" target="_blank">
-				<span class="sr-only">Go to Astro's GitHub repo</span>
-				<svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32"
-					><path
-						fill="currentColor"
-						d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"
-					></path></svg
-				>
-			</a>
-		</div>
-	</nav>
-</header>
-<style>
-	header {
-		margin: 0;
-		padding: 0 1em;
-		background: white;
-		box-shadow: 0 2px 8px rgba(var(--black), 5%);
-	}
-	h2 {
-		margin: 0;
-		font-size: 1em;
-	}
+<aside class="sidebar">
+	<a class="brand" href="/">Haru<b>.</b>DevLog</a>
 
-	h2 a,
-	h2 a.active {
-		text-decoration: none;
-	}
-	nav {
+	<div class="prof">
+		<div class="ava">H</div>
+		<div class="nm">박하루</div>
+		<div class="rl">보안 · 인프라 · 풀스택 개발자</div>
+	</div>
+
+	<div class="grp-wrap">
+		<div class="grp">카테고리</div>
+		<div class="cats">
+			<div class="cat-group">
+				<div class="cat-head">개발</div>
+				<a href="/blog">backend</a>
+				<a href="/blog">web</a>
+			</div>
+			<div class="cat-group">
+				<div class="cat-head">인프라 · 보안</div>
+				<a href="/blog">infra</a>
+				<a href="/blog">security</a>
+			</div>
+		</div>
+	</div>
+
+	<a class="diary-link" href="/diary">일기 <span>🔒</span></a>
+
+	<div class="side-foot">
+		<a href="https://github.com/haru1813" target="_blank" rel="noopener">
+			<span class="sr-only">GitHub</span>
+			<svg viewBox="0 0 16 16" aria-hidden="true" width="20" height="20"
+				><path
+					fill="currentColor"
+					d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"
+				></path></svg
+			>
+		</a>
+		<span class="cp">© 2026 박하루</span>
+	</div>
+</aside>
+
+<style>
+	.sidebar {
+		width: 252px;
+		flex: none;
+		align-self: stretch;
+		background: var(--side);
+		border-right: 1px solid var(--border);
+		padding: 34px 26px;
 		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		flex-direction: column;
+		gap: 26px;
 	}
-	nav a {
-		padding: 1em 0.5em;
-		color: var(--black);
-		border-bottom: 4px solid transparent;
+	.brand {
+		font-size: 1.25rem;
+		font-weight: 750;
+		letter-spacing: -0.01em;
+		color: rgb(var(--black));
 		text-decoration: none;
 	}
-	nav a.active {
-		text-decoration: none;
-		border-bottom-color: var(--accent);
+	.brand b { color: var(--accent); }
+
+	.prof { display: flex; flex-direction: column; gap: 9px; }
+	.ava {
+		width: 52px; height: 52px; border-radius: 14px;
+		background: var(--accent); color: #1a1206;
+		font-weight: 800; font-size: 1.25rem;
+		display: grid; place-items: center;
 	}
-	.social-links,
-	.social-links a {
-		display: flex;
+	.prof .nm { font-weight: 700; font-size: 0.95rem; color: rgb(var(--black)); }
+	.prof .rl { font-size: 0.8rem; color: rgb(var(--gray-dark)); }
+
+	.nav { display: flex; flex-direction: column; gap: 2px; }
+	.nav a {
+		font-size: 0.85rem; color: rgb(var(--gray-dark));
+		text-decoration: none; padding: 7px 10px; border-radius: 8px;
+		font-family: var(--mono);
 	}
-	@media (max-width: 720px) {
-		.social-links {
-			display: none;
+	.nav a.on { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+	.nav a:hover { background: #22262f; }
+
+	.grp { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.13em; color: rgb(var(--gray)); font-weight: 700; margin-bottom: 9px; }
+	.cats { display: flex; flex-direction: column; gap: 16px; }
+	.cat-group { display: flex; flex-direction: column; }
+	.cat-head { font-size: 0.78rem; color: rgb(var(--black)); font-weight: 600; margin-bottom: 5px; }
+	.cats a { font-size: 0.8rem; color: rgb(var(--gray)); text-decoration: none; padding: 3px 0 3px 12px; font-family: var(--mono); }
+	.cats a:hover { color: var(--accent); }
+
+	.diary-link {
+		font-size: 0.82rem; color: rgb(var(--gray-dark));
+		text-decoration: none; padding: 8px 11px; border-radius: 9px;
+		font-family: var(--mono); background: var(--accent-soft);
+		display: flex; align-items: center; gap: 6px; align-self: flex-start;
+	}
+	.diary-link:hover { color: var(--accent); }
+
+	.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+	.chip { font-size: 0.7rem; color: var(--accent); background: var(--accent-soft); padding: 3px 9px; border-radius: 999px; font-weight: 600; }
+
+	.side-foot {
+		margin-top: auto; padding-top: 20px;
+		border-top: 1px solid var(--border);
+		display: flex; align-items: center; gap: 12px;
+	}
+	.side-foot a { color: rgb(var(--gray)); display: flex; }
+	.side-foot a:hover { color: var(--accent); }
+	.side-foot .cp { font-size: 0.72rem; color: rgb(var(--gray)); }
+
+	@media (max-width: 760px) {
+		.sidebar {
+			width: 100%;
+			border-right: 0;
+			border-bottom: 1px solid var(--border);
+			flex-direction: row;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 16px;
+			padding: 18px 22px;
 		}
+		.prof, .grp-wrap { display: none; }
+		.nav { flex-direction: row; margin-left: auto; }
+		.side-foot { margin: 0; padding: 0; border: 0; }
 	}
 </style>
