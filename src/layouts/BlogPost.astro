@@ -1,13 +1,20 @@
 ---
 import { Image } from 'astro:assets';
-import type { CollectionEntry } from 'astro:content';
+import { getCollection, type CollectionEntry } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
 
-type Props = CollectionEntry<'blog'>['data'];
+type Props = CollectionEntry<'blog'>['data'] & { id?: string };
 
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, id } = Astro.props;
+
+// 이 글을 parent로 지정한 '이어지는 글'들
+const children = id
+	? (await getCollection('blog'))
+			.filter((p) => p.data.parent === id)
+			.sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf())
+	: [];
 ---
 
 <html lang="ko">
@@ -20,20 +27,20 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 			}
 			.hero-image {
 				width: 100%;
-				padding: 32px 32px 0;
+				padding: 32px 48px 0;
 			}
 			.hero-image img {
 				display: block;
-				margin: 0 auto;
+				margin: 0;
 				border-radius: 12px;
 				box-shadow: var(--box-shadow);
-				max-width: 860px;
+				max-width: 960px;
 				width: 100%;
 			}
 			.prose {
-				max-width: 720px;
-				margin: 0 auto;
-				padding: 36px 32px 64px;
+				max-width: 960px;
+				margin: 0;
+				padding: 36px 48px 72px;
 				color: rgb(var(--gray-dark));
 			}
 			.title {
@@ -54,6 +61,46 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 			}
 			.last-updated-on {
 				font-style: italic;
+			}
+			.next-posts {
+				margin-top: 48px;
+				padding-top: 28px;
+				border-top: 1px solid var(--border);
+				display: flex;
+				flex-direction: column;
+				gap: 10px;
+			}
+			.np-label {
+				font-family: var(--mono);
+				font-size: 0.72rem;
+				color: rgb(var(--gray));
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+				margin-bottom: 6px;
+			}
+			.np-item {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				background: var(--card);
+				border: 1px solid var(--border);
+				border-radius: 12px;
+				padding: 15px 18px;
+				text-decoration: none;
+				transition: border-color 0.15s, transform 0.15s;
+			}
+			.np-item:hover {
+				border-color: var(--accent);
+				transform: translateX(3px);
+			}
+			.np-arrow {
+				color: var(--accent);
+				font-weight: 700;
+			}
+			.np-title {
+				color: rgb(var(--black));
+				font-weight: 600;
+				font-size: 1rem;
 			}
 		</style>
 	</head>
@@ -80,6 +127,19 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 						<h1>{title}</h1>
 					</div>
 					<slot />
+					{
+						children.length > 0 && (
+							<nav class="next-posts">
+								<div class="np-label">이어지는 글</div>
+								{children.map((c) => (
+									<a class="np-item" href={`/blog/${c.id}/`}>
+										<span class="np-arrow">→</span>
+										<span class="np-title">{c.data.title}</span>
+									</a>
+								))}
+							</nav>
+						)
+					}
 				</div>
 			</article>
 		</main>
