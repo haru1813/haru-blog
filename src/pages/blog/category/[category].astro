@@ -20,6 +20,11 @@ const { category } = Astro.params;
 const posts = (await getCollection('blog'))
 	.filter((p) => p.data.category === category)
 	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const tops = posts.filter((p) => !p.data.parent);
+const kids = (pid: string) =>
+	posts
+		.filter((p) => p.data.parent === pid)
+		.sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
 
 const label = LABELS[category as string] || category;
 ---
@@ -38,14 +43,30 @@ const label = LABELS[category as string] || category;
 			<div class="card-list">
 				{
 					posts.length ? (
-						posts.map((post) => (
-							<a class="postcard" href={`/blog/${post.id}/`}>
-								<div class="d">
-									<FormattedDate date={post.data.pubDate} />
-								</div>
-								<h2>{post.data.title}</h2>
-								{post.data.description && <p>{post.data.description}</p>}
-							</a>
+						tops.map((post) => (
+							<>
+								<a class="postcard" href={`/blog/${post.id}/`}>
+									<div class="d">
+										<FormattedDate date={post.data.pubDate} />
+									</div>
+									<h2>{post.data.title}</h2>
+									{post.data.description && <p>{post.data.description}</p>}
+								</a>
+								{kids(post.id).length > 0 && (
+									<div class="sub-posts">
+										{kids(post.id).map((c) => (
+											<a class="sub-post" href={`/blog/${c.id}/`}>
+												<div class="sd">
+													<span class="sub-arrow">↳</span>
+													<FormattedDate date={c.data.pubDate} />
+													<span>· 이어지는 글</span>
+												</div>
+												<div class="st">{c.data.title}</div>
+											</a>
+										))}
+									</div>
+								)}
+							</>
 						))
 					) : (
 						<p class="empty">이 카테고리엔 아직 글이 없어요.</p>
