@@ -28,17 +28,28 @@ category: backend
 
 즉 `@Controller`를 붙이는 순간 — *"나는 컴포넌트다, 스캔해서 빈으로 등록해 줘"*라고 표시하는 것이다.
 
-## Spring MVC — 어디를 스캔할지 직접 알려준다
+## Spring MVC(레거시) — XML 또는 자바 설정으로 직접 지정
 
-전통적인 Spring MVC에서는 **"어느 패키지를 뒤질지" 개발자가 명시**해야 한다.
+전통적인 Spring MVC에서는 **"어느 패키지를 뒤질지" 개발자가 직접 명시**해야 한다. 방식은 두 가지다.
+
+**① XML 설정 — 순수 레거시 방식.** `applicationContext.xml` 같은 설정 파일에 스캔 대상을 적는다. 오래된 Spring 프로젝트를 열면 이 한 줄이 거의 항상 있었다.
+
+```xml
+<!-- applicationContext.xml -->
+<context:component-scan base-package="com.example" />
+```
+
+"`com.example` 아래를 훑어서 `@Component` 계열을 전부 빈으로 등록해라"는 뜻이다. **Spring 레거시에서는 이렇게 XML로 빈을 스캔했다** — 빈 스캔의 출발점이었다.
+
+**② 자바 설정 — XML을 자바 클래스로 대체.** 이후 XML 파일 없이 자바 코드로 같은 일을 하게 됐다.
 
 ```java
 @Configuration
-@ComponentScan(basePackages = "com.example")  // 이 패키지 아래를 스캔
+@ComponentScan(basePackages = "com.example")
 public class AppConfig { }
 ```
 
-(예전 XML 방식이면 `<context:component-scan base-package="com.example"/>` 였다.) 어쨌든 **"여기를 스캔해라"**를 손으로 지정하는 게 핵심이다.
+XML이든 자바든 공통점은 하나다 — **"여기를 스캔해라"를 개발자가 손으로 지정**한다는 것. 이 수고를 다음 세대(Spring Boot)가 걷어낸다.
 
 ## Spring Boot — 알아서 자기 아래를 스캔한다
 
