@@ -18,15 +18,16 @@ const isAbout = path.startsWith('/about');
 	<div class="grp-wrap">
 		<div class="grp">카테고리</div>
 		<div class="cats">
+			<a class={`cat-all ${path === '/blog' ? 'on' : ''}`} href="/blog">전체 글</a>
 			<div class="cat-group">
 				<div class="cat-head">개발</div>
-				<a href="/blog">backend</a>
-				<a href="/blog">web</a>
+				<a href="/blog/category/backend" class={path.startsWith('/blog/category/backend') ? 'on' : ''}>backend</a>
+				<a href="/blog/category/web" class={path.startsWith('/blog/category/web') ? 'on' : ''}>web</a>
 			</div>
 			<div class="cat-group">
 				<div class="cat-head">인프라 · 보안</div>
-				<a href="/blog">infra</a>
-				<a href="/blog">security</a>
+				<a href="/blog/category/infra" class={path.startsWith('/blog/category/infra') ? 'on' : ''}>infra</a>
+				<a href="/blog/category/security" class={path.startsWith('/blog/category/security') ? 'on' : ''}>security</a>
 			</div>
 		</div>
 	</div>
@@ -93,6 +94,8 @@ const isAbout = path.startsWith('/about');
 	.cat-head { font-size: 0.78rem; color: rgb(var(--black)); font-weight: 600; margin-bottom: 5px; }
 	.cats a { font-size: 0.8rem; color: rgb(var(--gray)); text-decoration: none; padding: 3px 0 3px 12px; font-family: var(--mono); }
 	.cats a:hover { color: var(--accent); }
+	.cats a.on { color: var(--accent); font-weight: 600; }
+	.cat-all { padding-left: 0; margin-bottom: 8px; color: rgb(var(--gray-dark)); }
 
 	.diary-link {
 		font-size: 0.82rem; color: rgb(var(--gray-dark));

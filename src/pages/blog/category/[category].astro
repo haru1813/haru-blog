@@ -1,0 +1,66 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../../../components/BaseHead.astro';
+import FormattedDate from '../../../components/FormattedDate.astro';
+import Header from '../../../components/Header.astro';
+import { SITE_TITLE } from '../../../consts';
+
+const LABELS: Record<string, string> = {
+	backend: 'Backend',
+	web: 'Web',
+	infra: 'Infra',
+	security: 'Security',
+};
+
+export async function getStaticPaths() {
+	return ['backend', 'web', 'infra', 'security'].map((category) => ({ params: { category } }));
+}
+
+const { category } = Astro.params;
+const posts = (await getCollection('blog'))
+	.filter((p) => p.data.category === category)
+	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const label = LABELS[category as string] || category;
+---
+
+<!doctype html>
+<html lang="ko">
+	<head>
+		<BaseHead title={`${label} · ${SITE_TITLE}`} description={`${label} 카테고리 글 목록`} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h1>{label}</h1>
+			<p class="lead">// {category} 카테고리 · {posts.length}개 글</p>
+
+			<div class="card-list">
+				{
+					posts.length ? (
+						posts.map((post) => (
+							<a class="postcard" href={`/blog/${post.id}/`}>
+								<div class="d">
+									<FormattedDate date={post.data.pubDate} />
+								</div>
+								<h2>{post.data.title}</h2>
+								{post.data.description && <p>{post.data.description}</p>}
+							</a>
+						))
+					) : (
+						<p class="empty">이 카테고리엔 아직 글이 없어요.</p>
+					)
+				}
+			</div>
+
+			<a class="back-all" href="/blog">← 전체 글</a>
+		</main>
+	</body>
+</html>
+
+<style>
+	main { max-width: none; }
+	.lead { font-family: var(--mono); font-size: 0.85rem; color: rgb(var(--gray)); margin: 2px 0 28px; }
+	.empty { color: rgb(var(--gray)); }
+	.back-all { display: inline-block; margin-top: 28px; font-family: var(--mono); font-size: 0.85rem; color: var(--accent); }
+</style>
