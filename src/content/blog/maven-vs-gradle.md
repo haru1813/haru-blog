@@ -1,5 +1,5 @@
 ---
-title: 메이븐과 그라들 — 자바 빌드 도구, 무엇이 다른가
+title: 빌드 도구와 패키지 매니저 — 메이븐 vs 그라들
 description: "Spring 프로젝트를 만들 때 처음 만나는 갈림길, Maven과 Gradle. 빌드 도구가 왜 필요한지부터 두 도구의 설정 방식·성능·선택 기준까지 정리한다."
 pubDate: 2026-08-06
 category: backend
