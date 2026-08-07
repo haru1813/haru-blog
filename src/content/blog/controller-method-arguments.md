@@ -81,6 +81,20 @@ public User get(@RequestParam Long id,
 
 즉 **종류가 늘어난 게 아니라, 원래 있던 것들이 애노테이션으로 겉모습만 바뀐** 것이다. 오히려 Spring은 여기에 **타입 변환(String→Long)과 JSON 파싱까지 자동으로** 얹어줬다. 손이 줄어든 셈이다.
 
+## 반대편 — 반환값으로 응답을 만든다
+
+지금까지는 요청을 **받는** 인자였다. 반대로 컨트롤러가 응답을 **돌려주는** 반환값도 있다. 둘은 대칭을 이룬다. 가장 중요한 대칭이 **`@RequestBody` ↔ `@ResponseBody`**다.
+
+| 요청 (받기) | 응답 (돌려주기) |
+|---|---|
+| `@RequestBody` — 본문 JSON → 객체 | `@ResponseBody` — 객체 → 본문 JSON |
+
+- **`@ResponseBody`** — 반환 객체를 JSON 등으로 **직렬화해 응답 본문에 담는다.** `@RequestBody`(요청 본문 → 객체)의 정확한 반대다.
+- **`ResponseEntity`** — 본문에 더해 **상태코드·헤더까지** 함께 돌려준다.
+- **`String`** — 뷰 이름(JSP·타임리프), **`ModelAndView`** — 모델 + 뷰.
+
+`@RestController`는 사실 `@Controller` + `@ResponseBody`다. 그래서 REST 컨트롤러는 메서드마다 `@ResponseBody`를 안 붙여도 **반환 객체가 자동으로 JSON**이 된다. (요청·응답 본문의 자세한 정리는 [요청과 응답 글](/blog/request-response-body/)에서 이어진다.)
+
 ## 그래서 다 외울 필요가 없다
 
 핵심은 이것이다.
