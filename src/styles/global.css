@@ -43,8 +43,8 @@ body {
 main {
 	flex: 1;
 	min-width: 0;
-	max-width: 1200px;
-	padding: 42px 44px 64px;
+	max-width: none;
+	padding: 42px 56px 64px;
 }
 
 h1, h2, h3, h4, h5, h6 {
