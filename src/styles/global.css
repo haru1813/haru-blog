@@ -43,7 +43,7 @@ body {
 main {
 	flex: 1;
 	min-width: 0;
-	max-width: 820px;
+	max-width: 1200px;
 	padding: 42px 44px 64px;
 }
 
