@@ -79,6 +79,46 @@ React → "바뀌었어!" 하고 손들어야 갱신 (명시적, 예측 쉬움)
 Vue   → 바꾸기만 하면 알아서 갱신 (반응형, 편함)
 ```
 
+## 차이 ④ 컴포넌트 작성 방식 — 두 스타일
+
+둘 다 컴포넌트를 짜는 방식이 **"분리형"과 "조합형" 두 갈래**로 나뉜다. 그리고 이 둘이 서로 정확히 대응한다.
+
+**Vue — Options API vs Composition API**
+```js
+// Options API (Vue 2 방식) — 옵션별로 나눠 씀
+export default {
+  data() { return { count: 0 } },
+  methods: { inc() { this.count++ } }
+}
+
+// Composition API (Vue 3) — 로직을 자유롭게 조합
+const count = ref(0)
+const inc = () => count.value++
+```
+
+**React — 클래스 vs 함수형+Hooks**
+```jsx
+// 클래스 컴포넌트 (옛날) — 정해진 자리, this.state
+state = { count: 0 };
+inc = () => this.setState({ count: this.state.count + 1 });
+
+// 함수형 + Hooks (현대 표준) — 로직 조합
+const [count, setCount] = useState(0);
+const inc = () => setCount(count + 1);
+```
+
+| | 분리형 | 조합형 |
+|---|---|---|
+| **Vue** | Options API | Composition API |
+| **React** | 클래스 (레거시) | 함수형 + Hooks (표준) |
+
+```
+Vue Options API      ≈  React 클래스 컴포넌트   (정해진 자리, this 기반)
+Vue Composition API  ≈  React 함수형 + Hooks    (로직 조합, this 없음)
+```
+
+**결정적 차이** — React는 **함수형+Hooks로 거의 통일**됐다(클래스는 레거시, 새 코드는 함수형만). 반면 Vue는 **둘 다 공식 지원**한다(간단하면 Options, 대규모·재사용이면 Composition). 그리고 재밌게도 — **Vue의 Composition API는 React Hooks에서 영감**을 받았다. *"로직을 함수로 묶어 재사용"*(React는 커스텀 훅, Vue는 컴포저블)이라는 철학이 같다. 그래서 이 둘이 이렇게 닮았다.
+
 ## 비교표
 
 | | React | Vue |
