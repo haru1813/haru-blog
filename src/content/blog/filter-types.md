@@ -46,6 +46,36 @@ public class JwtFilter extends OncePerRequestFilter {
 }
 ```
 
+### ServletRequest vs HttpServletRequest — 편한 이유가 하나 더
+
+위 예시에서 `doFilterInternal`이 `HttpServletRequest`를 받는 걸 눈여겨보자. 사실 `OncePerRequestFilter`를 쓰는 이유가 **하나 더** 있다 — **타입 캐스팅을 대신 해준다**는 것이다. 이걸 이해하려면 두 타입의 관계부터 알아야 한다.
+
+```
+ServletRequest       (부모 — 프로토콜 중립)
+      ▲
+      │ extends
+HttpServletRequest   (자식 — HTTP 전용)
+```
+
+- **`ServletRequest`·`ServletResponse`** — **프로토콜 중립** 부모. "HTTP일 수도, 아닐 수도 있는" 일반 요청/응답이라 `getMethod()`·`getHeader()`·`getCookies()`·`getSession()` 같은 **HTTP 전용 기능이 없다.** 가진 건 `getParameter()`·`getInputStream()`처럼 프로토콜 무관한 기본뿐이다.
+- **`HttpServletRequest`·`HttpServletResponse`** — 그 부모를 **상속**해 HTTP 전용 기능(메서드·헤더·쿠키·세션·상태코드·리다이렉트…)을 얹은 자식. 우리가 실제로 쓰는 건 다 여기 있다.
+
+서블릿 스펙이 *"세상에 HTTP만 있는 건 아닐 수도"* 하고 중립 계층을 먼저 뒀지만, 현실은 거의 100% HTTP라 **실무에선 `HttpServletRequest`만** 쓴다. `ServletRequest`를 직접 쓸 일은 거의 없다.
+
+문제는 **순수 `Filter`의 `doFilter`가 부모 타입을 받는다**는 것이다. HTTP 기능을 쓰려면 매번 자식으로 캐스팅해야 한다.
+
+```java
+public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) {
+    // req.getMethod()  ← 없음! ServletRequest엔 HTTP 메서드가 없다
+    HttpServletRequest httpReq = (HttpServletRequest) req;  // 매번 캐스팅
+    String method = httpReq.getMethod();
+}
+```
+
+반면 `OncePerRequestFilter`의 `doFilterInternal`은 **처음부터 `HttpServletRequest`로** 넘겨준다(위 `JwtFilter` 예시처럼). 캐스팅이 필요 없다.
+
+정리하면 `OncePerRequestFilter`의 이점은 둘이다 — **① 요청당 1회 보장, ② HTTP 타입으로 바로 받는 편의.** 그래서 실무의 커스텀 필터는 대부분 이걸 상속한다.
+
 ## ② 스프링이 이미 제공하는 내장 필터
 
 스프링은 자주 필요한 필터를 미리 만들어 두었다. 스프링 부트는 이것들을 **필요할 때 자동 등록**해줘서, 있는지도 모르고 쓰는 경우가 많다.
