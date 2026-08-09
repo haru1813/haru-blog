@@ -9,31 +9,48 @@ category: frontend
 
 ## React — JSX 표현식 `{}`
 
-컴포넌트 함수 안에 변수를 선언하고, JSX에서 **중괄호 하나 `{}`** 로 꽂는다.
+React는 출력이 **중괄호 하나 `{}`** 로 고정이다. 다만 [작성 방식](/blog/react-vs-vue/)에 따라 **변수를 선언하는 위치**가 다르다.
 
+**함수형 컴포넌트 (현대 표준)**
 ```jsx
 function App() {
-  const name = "하루";       // 변수 선언 (그냥 자바스크립트)
+  const name = "하루";        // 함수 안에 변수
   const age = 34;
-
   return (
     <div>
-      <h1>{name}</h1>        {/* {} 안에 변수 → "하루" */}
-      <p>나이: {age}</p>      {/* "나이: 34" */}
+      <h1>{name}</h1>         {/* {} 안에 변수 → "하루" */}
+      <p>나이: {age}</p>       {/* "나이: 34" */}
     </div>
   );
 }
 ```
 
-`{}`는 *"여기에 자바스크립트 값을 넣어라"* 는 표시다. JSX 안에서 JS 세계로 잠깐 들어가는 창이라고 보면 된다.
+**클래스 컴포넌트 (레거시)**
+```jsx
+class App extends React.Component {
+  render() {
+    const name = "하루";      // render() 안에 변수
+    const age = 34;
+    return (
+      <div>
+        <h1>{name}</h1>       {/* 출력은 똑같이 {} */}
+        <p>나이: {age}</p>
+      </div>
+    );
+  }
+}
+```
+
+**변수 선언 위치만 다르고**(함수 안 vs `render()` 안), **출력은 둘 다 `{}`** 로 똑같다. `{}`는 *"여기에 자바스크립트 값을 넣어라"* 는, JSX 안에서 JS로 들어가는 창이다.
 
 ## Vue — 텍스트 보간 `{{}}`
 
-`<script setup>`에 변수를 선언하고, `<template>`에서 **중괄호 둘 `{{}}`** 로 꽂는다. 이 `{{}}`를 **보간(mustache, 콧수염)** 이라 부른다.
+Vue는 출력이 **중괄호 둘 `{{}}`** 로 고정이다 (이 `{{}}`를 **보간**, mustache라 부른다). 역시 [작성 방식](/blog/react-vs-vue/)에 따라 선언이 다르다.
 
+**Composition API (권장)**
 ```vue
 <script setup>
-const name = "하루"          // 변수 선언
+const name = "하루"          // const로 선언
 const age = 34
 </script>
 
@@ -45,21 +62,45 @@ const age = 34
 </template>
 ```
 
+**Options API**
+```vue
+<script>
+export default {
+  data() {
+    return { name: "하루", age: 34 }   // data() 옵션에 담아 반환
+  }
+}
+</script>
+
+<template>
+  <div>
+    <h1>{{ name }}</h1>      <!-- 출력은 똑같이 {{}} -->
+    <p>나이: {{ age }}</p>
+  </div>
+</template>
+```
+
+선언이 **`const`(Composition) vs `data()` 반환(Options)** 으로 다르고, **출력은 둘 다 `{{}}`** 로 똑같다.
+
 ## 나란히 비교
 
-| | React | Vue |
+| 스타일 | 변수 선언 위치 | 출력 |
 |---|---|---|
-| 변수 선언 위치 | 컴포넌트 **함수 안** | `<script setup>` |
-| 출력 문법 | `{name}` (**중괄호 1개**) | `{{ name }}` (**중괄호 2개**) |
-| 출력 위치 | `return`의 JSX | `<template>` |
-| 이름 | JSX 표현식 | 텍스트 보간(mustache) |
+| React **함수형** | 함수 안 `const` | `{name}` |
+| React **클래스** | `render()` 안 `const` | `{name}` |
+| Vue **Composition** | `<script setup>`의 `const` | `{{ name }}` |
+| Vue **Options** | `data()` 반환 | `{{ name }}` |
 
 ```
-React → { }   (하나)
-Vue   → {{ }} (둘)
+React (함수형·클래스) → { }   (중괄호 하나)
+Vue   (Composition·Options) → {{ }} (중괄호 둘)
 ```
 
-가장 눈에 띄는 차이는 **중괄호 개수**다 — React는 하나, Vue는 둘. 이거 하나로 어느 쪽 코드인지 바로 구분된다.
+핵심은 두 가지다:
+- **출력 문법은 프레임워크별로 고정** — React는 `{}`, Vue는 `{{}}` (스타일이 뭐든 안 바뀜)
+- **변수 선언 위치만 스타일별로** 다름 — 함수 안 / `render()` 안 / `script setup` / `data()`
+
+그래서 어느 쪽 코드인지는 **중괄호 개수**로, 어떤 스타일인지는 **선언 위치**로 알아본다.
 
 ## 중괄호 안엔 "표현식"이 들어간다
 
