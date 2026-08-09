@@ -1,7 +1,7 @@
 ---
 title: 반복 렌더링 — React map vs Vue v-for
 description: "배열 데이터를 목록 UI로 반복해 그리는 법. React는 JSX 안에서 배열의 map()으로(자바스크립트), Vue는 v-for 디렉티브로(HTML 속성처럼) 처리한다. 함수형·클래스·Composition·Options 네 스타일, 그리고 둘 다 필수인 key의 이유까지 정리한다."
-pubDate: 2026-08-09
+pubDate: 2026-08-09T17:00:00
 category: frontend
 ---
 

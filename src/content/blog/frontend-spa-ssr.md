@@ -1,7 +1,7 @@
 ---
 title: SPA와 SSR — React·Vue·Next·Nuxt가 태어난 배경
 description: "React와 Vue를 배우기 전에, 왜 이것들이 나왔는지부터. 전통적 MPA에서 SPA로 넘어온 이유, SPA의 한계(초기 로딩·SEO), 그걸 풀려고 SSR이 돌아오며 등장한 메타 프레임워크 Next.js·Nuxt.js까지 — 프론트엔드의 흐름을 잡는다."
-pubDate: 2026-08-09
+pubDate: 2026-08-09T23:00:00
 category: frontend
 ---
 

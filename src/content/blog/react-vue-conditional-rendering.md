@@ -1,7 +1,7 @@
 ---
 title: 조건부 렌더링 — React 삼항·&& vs Vue v-if
 description: "조건에 따라 화면을 다르게 그리는 법. React는 JSX 안에서 삼항연산자·&&로(자바스크립트), Vue는 v-if·v-else·v-show 디렉티브로(HTML 속성처럼) 처리한다. 함수형·클래스·Composition·Options 네 스타일로 나눠 정리한다."
-pubDate: 2026-08-09
+pubDate: 2026-08-09T18:00:00
 category: frontend
 ---
 
