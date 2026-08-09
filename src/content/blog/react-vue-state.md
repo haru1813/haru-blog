@@ -127,6 +127,36 @@ setItems([...items, newItem]);
 **Vue — ref의 .value**
 Composition의 `ref`는 script에서 `.value`를 빠뜨리기 쉽다. `count++`가 아니라 **`count.value++`** 다(template에선 생략). Options의 `data`는 `this.count`로 이 고민이 없다.
 
+## 짝꿍 개념 — 리렌더 없는 값 (useRef)
+
+상태의 반대편에 **`useRef`** 가 있다. 상태는 바뀌면 화면을 다시 그리지만, **`useRef`는 바뀌어도 다시 안 그린다.** DOM 요소를 참조하거나, 화면과 무관하게 값을 보관할 때 쓴다.
+
+```
+useState → 바뀌면 화면 다시 그림 (리렌더 O)
+useRef   → 바뀌어도 화면 안 그림 (리렌더 X) + DOM 참조
+```
+
+```jsx
+const inputRef = useRef(null);
+<input ref={inputRef} />
+inputRef.current.focus();   // .current로 DOM 접근
+
+const countRef = useRef(0);
+countRef.current++;         // 값은 바뀌지만 화면은 그대로
+```
+
+이것도 4스타일로 대응한다.
+
+| 용도 | React 함수형 | React 클래스 | Vue Composition | Vue Options |
+|---|---|---|---|---|
+| **DOM 참조** | `useRef` | `createRef` | 템플릿 `ref`(`.value`) | `this.$refs` |
+| **값 보관(리렌더X)** | `useRef` | 인스턴스 필드 `this.x` | 일반 변수 | (반응형 밖 필드) |
+
+- **클래스**엔 훅이 없으니, DOM은 `React.createRef()`, 값 보관은 그냥 **인스턴스 필드**(`this.x`)로
+- **Vue**는 DOM 참조를 템플릿 `ref`(Composition은 `.value`, Options는 `this.$refs`)로
+
+**Vue에서 헷갈리는 지점** — Vue의 `ref()`는 **하나의 함수로 두 역할**을 한다. 값에 쓰면 반응형 상태(`ref(0)`), 템플릿 `ref="el"`에 연결하면 DOM 참조가 된다. React가 `useState`/`useRef`로 **이름을 나눈** 것과 달리, Vue는 같은 `ref()`라 *"어? 아까 그 ref 아니야?"* 하고 헷갈리기 쉽다.
+
 ## 정리
 
 - **상태(state)** = 바뀌면 **화면이 자동으로 다시 그려지는** 값 (그냥 변수는 바꿔도 화면 안 바뀜)
