@@ -119,6 +119,130 @@ formData.append("avatar", file)   →   void signup(@RequestParam String name,
         ← 데이터 바인딩으로 화면에 반영
 ```
 
+## 전체 예시 — 파일 업로드 폼
+
+이름과 프로필 사진을 받아 백엔드로 보내는 완성 폼이다. (요청은 `axios`로)
+
+**React (함수형)**
+```jsx
+import { useState } from 'react';
+import axios from 'axios';
+
+function SignupForm() {
+  const [name, setName] = useState("");
+  const [avatar, setAvatar] = useState(null);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("avatar", avatar);
+    try {
+      const res = await axios.post("/api/signup", formData);
+      console.log("성공:", res.data);
+    } catch (err) {
+      console.error("실패:", err);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input value={name} onChange={e => setName(e.target.value)} placeholder="이름" />
+      <input type="file" onChange={e => setAvatar(e.target.files[0])} />
+      <button type="submit">가입</button>
+    </form>
+  );
+}
+```
+
+**React (클래스)**
+```jsx
+import axios from 'axios';
+
+class SignupForm extends React.Component {
+  state = { name: "", avatar: null };
+
+  handleSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("name", this.state.name);
+    formData.append("avatar", this.state.avatar);
+    const res = await axios.post("/api/signup", formData);
+    console.log("성공:", res.data);
+  };
+
+  render() {
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <input value={this.state.name}
+               onChange={e => this.setState({ name: e.target.value })} placeholder="이름" />
+        <input type="file" onChange={e => this.setState({ avatar: e.target.files[0] })} />
+        <button type="submit">가입</button>
+      </form>
+    );
+  }
+}
+```
+
+**Vue (Composition)**
+```vue
+<script setup>
+import { ref } from 'vue'
+import axios from 'axios'
+
+const name = ref("")
+const avatar = ref(null)
+
+const handleSubmit = async () => {
+  const formData = new FormData()
+  formData.append("name", name.value)
+  formData.append("avatar", avatar.value)
+  const res = await axios.post("/api/signup", formData)
+  console.log("성공:", res.data)
+}
+</script>
+
+<template>
+  <form @submit.prevent="handleSubmit">
+    <input v-model="name" placeholder="이름" />
+    <input type="file" @change="e => avatar = e.target.files[0]" />
+    <button type="submit">가입</button>
+  </form>
+</template>
+```
+
+**Vue (Options)**
+```vue
+<script>
+import axios from 'axios'
+
+export default {
+  data() {
+    return { name: "", avatar: null }
+  },
+  methods: {
+    async handleSubmit() {
+      const formData = new FormData()
+      formData.append("name", this.name)
+      formData.append("avatar", this.avatar)
+      const res = await axios.post("/api/signup", formData)
+      console.log("성공:", res.data)
+    }
+  }
+}
+</script>
+
+<template>
+  <form @submit.prevent="handleSubmit">
+    <input v-model="name" placeholder="이름" />
+    <input type="file" @change="e => avatar = e.target.files[0]" />
+    <button type="submit">가입</button>
+  </form>
+</template>
+```
+
+네 스타일 모두 **핵심은 같다** — `FormData`에 텍스트와 파일을 담아 `axios.post`로 보낸다. [상태 관리 방식](/blog/react-vue-state/)(useState/state/ref/data)과 [입력 연결](/blog/react-vue-forms/)(value+onChange/v-model)만 스타일별로 다를 뿐, **FormData 전송 부분은 완전히 동일**하다. 이게 [폼](/blog/react-vue-forms/)에서 받은 걸 백엔드([`MultipartFile`](/blog/controller-method-arguments/))로 보내는 실전 코드다.
+
 ## 정리
 
 - **보내기 두 갈래** — 일반 데이터는 **JSON**(`application/json`), 파일은 **FormData**(`multipart/form-data`)
