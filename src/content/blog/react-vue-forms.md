@@ -211,6 +211,42 @@ function SignupForm() {
 }
 ```
 
+**React (클래스)**
+```jsx
+class SignupForm extends React.Component {
+  state = { name: "", bio: "", gender: "male", agree: false };
+
+  handleSubmit = (e) => {
+    e.preventDefault();
+    if (!this.state.agree) { alert("약관에 동의해주세요"); return; }
+    console.log(this.state);
+  };
+
+  render() {
+    const { name, bio, gender, agree } = this.state;
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <input value={name}
+               onChange={e => this.setState({ name: e.target.value })} placeholder="이름" />
+        <textarea value={bio}
+                  onChange={e => this.setState({ bio: e.target.value })} placeholder="소개" />
+        <select value={gender}
+                onChange={e => this.setState({ gender: e.target.value })}>
+          <option value="male">남성</option>
+          <option value="female">여성</option>
+        </select>
+        <label>
+          <input type="checkbox" checked={agree}
+                 onChange={e => this.setState({ agree: e.target.checked })} />
+          약관 동의
+        </label>
+        <button type="submit">가입</button>
+      </form>
+    );
+  }
+}
+```
+
 **Vue (Composition)**
 ```vue
 <script setup>
@@ -244,7 +280,40 @@ const handleSubmit = () => {
 </template>
 ```
 
-두 코드를 나란히 보면 차이가 확 보인다:
+**Vue (Options)**
+```vue
+<script>
+export default {
+  data() {
+    return { name: "", bio: "", gender: "male", agree: false }
+  },
+  methods: {
+    handleSubmit() {
+      if (!this.agree) { alert("약관에 동의해주세요"); return }
+      console.log({ name: this.name, bio: this.bio, gender: this.gender, agree: this.agree })
+    }
+  }
+}
+</script>
+
+<template>
+  <form @submit.prevent="handleSubmit">
+    <input v-model="name" placeholder="이름" />
+    <textarea v-model="bio" placeholder="소개" />
+    <select v-model="gender">
+      <option value="male">남성</option>
+      <option value="female">여성</option>
+    </select>
+    <label>
+      <input type="checkbox" v-model="agree" />
+      약관 동의
+    </label>
+    <button type="submit">가입</button>
+  </form>
+</template>
+```
+
+네 코드를 나란히 보면 차이가 확 보인다:
 - **React** — 필드마다 `value` + `onChange`를 **각각** 써야 한다 (4개 필드 = 8번). 대신 흐름이 명시적이다
 - **Vue** — 필드마다 `v-model` **한 번**이면 끝이다 (4개 필드 = 4번). 훨씬 짧다
 
