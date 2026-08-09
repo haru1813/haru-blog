@@ -172,6 +172,84 @@ React는 `value→checked`, `e.target.value→e.target.checked`로 바뀐다. Vu
 
 대부분은 `value`/`v-model` 패턴이 그대로 간다. **예외는 딱 둘** — checkbox/radio는 `checked`, file은 제어가 안 된다(읽기만). 이 두 개만 기억하면 된다.
 
+## 전체 예시 — 회원가입 폼
+
+조각으로 봤으니, 이제 **실제 동작하는 폼 하나**를 통째로 보자. 이름·소개·성별·약관 동의를 받아 제출하는 폼이다.
+
+**React (함수형)**
+```jsx
+import { useState } from 'react';
+
+function SignupForm() {
+  const [name, setName] = useState("");
+  const [bio, setBio] = useState("");
+  const [gender, setGender] = useState("male");
+  const [agree, setAgree] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!agree) { alert("약관에 동의해주세요"); return; }
+    console.log({ name, bio, gender, agree });   // 제출 데이터
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input value={name} onChange={e => setName(e.target.value)} placeholder="이름" />
+      <textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="소개" />
+      <select value={gender} onChange={e => setGender(e.target.value)}>
+        <option value="male">남성</option>
+        <option value="female">여성</option>
+      </select>
+      <label>
+        <input type="checkbox" checked={agree}
+               onChange={e => setAgree(e.target.checked)} />
+        약관 동의
+      </label>
+      <button type="submit">가입</button>
+    </form>
+  );
+}
+```
+
+**Vue (Composition)**
+```vue
+<script setup>
+import { ref } from 'vue'
+
+const name = ref("")
+const bio = ref("")
+const gender = ref("male")
+const agree = ref(false)
+
+const handleSubmit = () => {
+  if (!agree.value) { alert("약관에 동의해주세요"); return }
+  console.log({ name: name.value, bio: bio.value, gender: gender.value, agree: agree.value })
+}
+</script>
+
+<template>
+  <form @submit.prevent="handleSubmit">
+    <input v-model="name" placeholder="이름" />
+    <textarea v-model="bio" placeholder="소개" />
+    <select v-model="gender">
+      <option value="male">남성</option>
+      <option value="female">여성</option>
+    </select>
+    <label>
+      <input type="checkbox" v-model="agree" />
+      약관 동의
+    </label>
+    <button type="submit">가입</button>
+  </form>
+</template>
+```
+
+두 코드를 나란히 보면 차이가 확 보인다:
+- **React** — 필드마다 `value` + `onChange`를 **각각** 써야 한다 (4개 필드 = 8번). 대신 흐름이 명시적이다
+- **Vue** — 필드마다 `v-model` **한 번**이면 끝이다 (4개 필드 = 4번). 훨씬 짧다
+
+같은 폼인데 **React는 손이 두 배** 가는 셈이다. 대신 그만큼 *"입력이 상태를 거친다"* 는 게 눈에 보인다. 이게 [지금껏 본](/blog/react-vue-state/) **명시적(React) vs 편리함(Vue)** 의 트레이드오프다. (클래스·Options로 써도 구조는 같다 — 상태 선언 위치만 [바뀔 뿐](/blog/react-vue-state/)이다.)
+
 ## 정리
 
 - **폼 처리** = 입력값을 상태와 연결
