@@ -3,7 +3,7 @@ title: 스프링 부트 예외 처리 — @ExceptionHandler·@RestControllerAdvi
 description: "컨트롤러에서 예외가 터지면 무슨 일이 벌어지나. 스프링 부트의 기본 에러 처리부터, @ExceptionHandler(개별)·@RestControllerAdvice(전역)·@ResponseStatus, 일관된 에러 응답 만들기, 그리고 이게 AOP가 아니라 HandlerExceptionResolver로 도는 이유까지 정리한다."
 pubDate: 2026-08-08
 category: backend
-parent: validation-valid-bean-validation
+parent: data-flow-dto-entity-domain
 ---
 
 컨트롤러를 짜다 보면 반드시 만난다. **"예외가 터지면, 클라이언트한테 뭐가 나가지?"** [검증 글](/blog/validation-valid-bean-validation/)에서 `@Valid`가 실패하면 예외가 난다고 했는데, 그 예외를 어떻게 **일관된 에러 응답**으로 바꾸는지가 이번 주제다. try-catch를 컨트롤러마다 도배하지 않고 처리하는 법을 정리한다.
