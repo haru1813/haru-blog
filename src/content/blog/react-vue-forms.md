@@ -319,6 +319,28 @@ export default {
 
 같은 폼인데 **React는 손이 두 배** 가는 셈이다. 대신 그만큼 *"입력이 상태를 거친다"* 는 게 눈에 보인다. 이게 [지금껏 본](/blog/react-vue-state/) **명시적(React) vs 편리함(Vue)** 의 트레이드오프다. (클래스·Options로 써도 구조는 같다 — 상태 선언 위치만 [바뀔 뿐](/blog/react-vue-state/)이다.)
 
+### 프로필 사진(file)은 왜 위 폼에 없을까
+
+눈치챘다면 — 위 회원가입 폼엔 **파일 입력이 없다.** 일부러 뺐다. 위에서 봤듯 **file은 제어가 안 되는 특수 케이스**라, `value`/`v-model` 패턴으로 흐르는 폼에 섞으면 결이 깨지기 때문이다. file만 따로 보자.
+
+**React (함수형·클래스 공통)**
+```jsx
+const [avatar, setAvatar] = useState(null);   // 클래스면 state에 avatar: null
+// ...
+<input type="file"
+       onChange={e => setAvatar(e.target.files[0])} />   // value 없음!
+```
+
+**Vue (Composition·Options 공통)**
+```vue
+const avatar = ref(null)   // Options면 data의 avatar: null
+// template
+<input type="file"
+       @change="e => avatar = e.target.files[0]" />       // v-model 없음!
+```
+
+위 회원가입 폼에 **이 한 줄만 더하면** 프로필 사진까지 받는다. 다른 필드는 `value`/`v-model`인데 **file만 `onChange`/`@change`로 파일 객체(`e.target.files[0]`)를 읽는다** — 이 예외 하나만 기억하면 된다. (그래서 "전체 예시"에선 패턴을 흐트러뜨리지 않으려고 빼두고, 여기서 따로 짚은 것이다.)
+
 ## 정리
 
 - **폼 처리** = 입력값을 상태와 연결
