@@ -114,6 +114,23 @@ React → onClick / onChange / onSubmit  (on + 카멜, 함수)
 Vue   → @click / @change / @submit      (@ + 디렉티브, +수식어)
 ```
 
+## 이벤트는 클릭만이 아니다
+
+클릭은 예시였을 뿐, 이벤트 종류는 많다. 다행히 **규칙은 똑같다** — React는 `on` + 카멜케이스, Vue는 `@` + 이벤트명. 규칙만 알면 표를 다 외울 필요도 없다.
+
+| 동작 | React | Vue |
+|---|---|---|
+| 클릭 | `onClick` | `@click` |
+| 입력(타이핑) | `onChange` / `onInput` | `@input` / `@change` |
+| 폼 제출 | `onSubmit` | `@submit` |
+| 키 입력 | `onKeyDown` / `onKeyUp` | `@keydown` / `@keyup` |
+| 마우스 진입/이탈 | `onMouseEnter` / `onMouseLeave` | `@mouseenter` / `@mouseleave` |
+| 포커스/해제 | `onFocus` / `onBlur` | `@focus` / `@blur` |
+
+새 이벤트를 만나도 규칙으로 유추된다 — 더블클릭이면 React `onDblClick`, Vue `@dblclick` 식이다.
+
+> **주의 — `onChange`의 함정**: React의 `onChange`는 HTML의 그것과 달리 **매 입력마다** 발생한다(사실상 `onInput`처럼). 반면 Vue는 **매 입력이 `@input`**, **포커스가 벗어날 때가 `@change`** 로 나뉜다. 그래서 실시간 입력을 잡을 땐 React는 `onChange`, Vue는 `@input`을 쓴다. [폼 처리 글](/blog/react-vue-forms/)에서 이 `onChange`/`@input`이 다시 나온다.
+
 ## 정리
 
 - **이벤트 처리** = 사용자 동작(클릭·입력·제출)에 반응
