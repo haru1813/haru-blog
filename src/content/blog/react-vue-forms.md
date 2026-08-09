@@ -110,6 +110,68 @@ Vue   → v-model (한 줄, 양방향 자동)
         └ 사실 :value + @input 의 축약
 ```
 
+## input 말고 다른 폼 요소들
+
+지금까진 텍스트 `<input>`이었다. 다른 요소들도 대부분 원리는 같지만, **몇 개는 주의**가 필요하다.
+
+**① textarea·select — input과 똑같다**
+```jsx
+// React
+<textarea value={text} onChange={e => setText(e.target.value)} />
+<select value={picked} onChange={e => setPicked(e.target.value)}>...</select>
+```
+```vue
+<!-- Vue -->
+<textarea v-model="text" />
+<select v-model="picked">...</select>
+```
+`value`/`v-model` 패턴 그대로다.
+
+**② checkbox·radio — value가 아니라 `checked`**
+체크박스는 "값"이 아니라 "켜짐/꺼짐"이라, React는 `value` 대신 **`checked`** 를 쓴다.
+```jsx
+// React — value가 아니라 checked, e.target.checked
+<input type="checkbox" checked={agree}
+       onChange={e => setAgree(e.target.checked)} />
+```
+```vue
+<!-- Vue — v-model이 알아서 boolean으로 -->
+<input type="checkbox" v-model="agree" />
+```
+React는 `value→checked`, `e.target.value→e.target.checked`로 바뀐다. Vue는 `v-model`이 자동으로 boolean에 묶는다.
+
+**③ file — 특별하다 (제어가 안 됨)**
+파일 입력은 보안상 값을 코드로 넣을 수 없다. 그래서 **제어 컴포넌트도 `v-model`도 안 되고**, `onChange`/`@change`로 파일을 **읽기만** 한다.
+```jsx
+// React — value 없이, files를 읽음
+<input type="file" onChange={e => setFile(e.target.files[0])} />
+```
+```vue
+<!-- Vue — file은 v-model 불가, @change로 -->
+<input type="file" @change="e => file = e.target.files[0]" />
+```
+
+**④ form 제출 — onSubmit / @submit.prevent**
+```jsx
+// React — preventDefault 직접
+<form onSubmit={e => { e.preventDefault(); /* 전송 */ }}>
+```
+```vue
+<!-- Vue — .prevent 수식어로 간단히 ([이벤트 글](/blog/react-vue-events/)의 그 수식어) -->
+<form @submit.prevent="onSubmit">
+```
+
+### 요약표
+
+| 요소 | React | Vue |
+|---|---|---|
+| text · textarea · select | `value` + `onChange` | `v-model` |
+| **checkbox · radio** | **`checked`** + `onChange` | `v-model` (boolean 자동) |
+| **file** | `onChange` (**제어 불가**) | `@change` (**v-model 불가**) |
+| form 제출 | `onSubmit` + `preventDefault` | `@submit.prevent` |
+
+대부분은 `value`/`v-model` 패턴이 그대로 간다. **예외는 딱 둘** — checkbox/radio는 `checked`, file은 제어가 안 된다(읽기만). 이 두 개만 기억하면 된다.
+
 ## 정리
 
 - **폼 처리** = 입력값을 상태와 연결
