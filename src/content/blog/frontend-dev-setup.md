@@ -53,8 +53,9 @@ npm run dev
 
 React든 Vue든 **Vite로 시작하는 명령이 거의 같다** — `--template` 뒤만 다르다. 이게 Vite의 편리함이다.
 
-## 폴더 구조 (React 예시)
+## 폴더 구조 (React · Vue)
 
+**React**
 ```
 my-react-app/
 ├── node_modules/     ← 설치된 라이브러리 (건드릴 일 없음)
@@ -67,6 +68,23 @@ my-react-app/
 ├── package.json      ← 의존성·스크립트 목록 (백엔드 pom.xml/build.gradle 격)
 └── vite.config.js    ← Vite 설정
 ```
+
+**Vue**
+```
+my-vue-app/
+├── node_modules/
+├── public/
+├── src/              ← ★ 우리가 작업하는 곳
+│   ├── App.vue       ← 최상위 컴포넌트 (SFC: 템플릿+스크립트+스타일 한 파일)
+│   ├── main.js       ← 진입점 (App을 화면에 붙임)
+│   ├── components/   ← (직접 만드는) 컴포넌트들
+│   └── assets/       ← 정적 자원(css 등)
+├── index.html        ← SPA의 그 "하나의 페이지"
+├── package.json      ← 의존성·스크립트 목록
+└── vite.config.js    ← Vite 설정
+```
+
+거의 똑같고, **핵심 파일만 다르다** — React는 `App.jsx`·`main.jsx`, Vue는 `App.vue`·`main.js`다. 특히 Vue의 **`.vue` 파일은 SFC(Single File Component)** 로, [차이 글](/blog/react-vs-vue/)에서 본 **템플릿·스크립트·스타일을 한 파일**에 담는다. 나머지(`index.html`·`package.json`·`vite.config.js`)는 Vite를 쓰니 **동일**하다.
 
 - **`src/`** 에서 대부분 작업한다
 - **`index.html`** 이 [배경 글](/blog/frontend-spa-ssr/)에서 말한 SPA의 *"하나의 페이지"* 다 — 여기 `<div id="root">`에 JS가 화면을 그린다
