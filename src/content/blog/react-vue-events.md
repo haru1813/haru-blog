@@ -1,5 +1,5 @@
 ---
-title: 이벤트 처리 — React onClick vs Vue @click
+title: 이벤트 처리 — React on핸들러 vs Vue @디렉티브
 description: "클릭·입력 같은 사용자 동작에 반응하는 법. React는 onClick처럼 카멜케이스 함수로, Vue는 @click 디렉티브(+수식어)로 처리한다. 이벤트 객체(e / $event)와 기본동작 막기까지, 함수형·클래스·Composition·Options 네 스타일로 정리한다."
 pubDate: 2026-08-01
 category: frontend
@@ -130,6 +130,107 @@ Vue   → @click / @change / @submit      (@ + 디렉티브, +수식어)
 새 이벤트를 만나도 규칙으로 유추된다 — 더블클릭이면 React `onDblClick`, Vue `@dblclick` 식이다.
 
 > **주의 — `onChange`의 함정**: React의 `onChange`는 HTML의 그것과 달리 **매 입력마다** 발생한다(사실상 `onInput`처럼). 반면 Vue는 **매 입력이 `@input`**, **포커스가 벗어날 때가 `@change`** 로 나뉜다. 그래서 실시간 입력을 잡을 땐 React는 `onChange`, Vue는 `@input`을 쓴다. [폼 처리 글](/blog/react-vue-forms/)에서 이 `onChange`/`@input`이 다시 나온다.
+
+## 전체 예시 — 여러 이벤트를 한 컴포넌트에
+
+클릭·입력·마우스 이벤트를 한 번에 담은 예제다.
+
+**React (함수형)**
+```jsx
+import { useState } from 'react';
+
+function EventDemo() {
+  const [count, setCount] = useState(0);
+  const [text, setText] = useState("");
+  const [hover, setHover] = useState(false);
+
+  return (
+    <div>
+      <button onClick={() => setCount(count + 1)}>클릭 횟수: {count}</button>
+
+      <input onChange={e => setText(e.target.value)} placeholder="입력해보세요" />
+      <p>입력값: {text}</p>
+
+      <div onMouseEnter={() => setHover(true)}
+           onMouseLeave={() => setHover(false)}>
+        {hover ? "🐭 마우스 올림!" : "여기에 마우스를 올려보세요"}
+      </div>
+    </div>
+  );
+}
+```
+
+**React (클래스)**
+```jsx
+class EventDemo extends React.Component {
+  state = { count: 0, text: "", hover: false };
+  render() {
+    const { count, text, hover } = this.state;
+    return (
+      <div>
+        <button onClick={() => this.setState({ count: count + 1 })}>클릭 횟수: {count}</button>
+
+        <input onChange={e => this.setState({ text: e.target.value })} placeholder="입력해보세요" />
+        <p>입력값: {text}</p>
+
+        <div onMouseEnter={() => this.setState({ hover: true })}
+             onMouseLeave={() => this.setState({ hover: false })}>
+          {hover ? "🐭 마우스 올림!" : "여기에 마우스를 올려보세요"}
+        </div>
+      </div>
+    );
+  }
+}
+```
+
+**Vue (Composition)**
+```vue
+<script setup>
+import { ref } from 'vue'
+const count = ref(0)
+const text = ref("")
+const hover = ref(false)
+</script>
+
+<template>
+  <div>
+    <button @click="count++">클릭 횟수: {{ count }}</button>
+
+    <input @input="e => text = e.target.value" placeholder="입력해보세요" />
+    <p>입력값: {{ text }}</p>
+
+    <div @mouseenter="hover = true" @mouseleave="hover = false">
+      {{ hover ? "🐭 마우스 올림!" : "여기에 마우스를 올려보세요" }}
+    </div>
+  </div>
+</template>
+```
+
+**Vue (Options)**
+```vue
+<script>
+export default {
+  data() {
+    return { count: 0, text: "", hover: false }
+  }
+}
+</script>
+
+<template>
+  <div>
+    <button @click="count++">클릭 횟수: {{ count }}</button>
+
+    <input @input="e => text = e.target.value" placeholder="입력해보세요" />
+    <p>입력값: {{ text }}</p>
+
+    <div @mouseenter="hover = true" @mouseleave="hover = false">
+      {{ hover ? "🐭 마우스 올림!" : "여기에 마우스를 올려보세요" }}
+    </div>
+  </div>
+</template>
+```
+
+세 이벤트(`click`·`input`·`mouseenter/leave`)가 각각 [상태](/blog/react-vue-state/)를 바꾸고, 그 상태가 화면에 반영된다 — `사용자 동작 → 이벤트 → 상태 → 화면`의 루프가 한눈에 보인다. React는 `on핸들러`, Vue는 `@디렉티브`라는 결만 다르고 흐름은 같다.
 
 ## 정리
 
