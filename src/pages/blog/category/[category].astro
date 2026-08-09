@@ -7,13 +7,14 @@ import { SITE_TITLE } from '../../../consts';
 
 const LABELS: Record<string, string> = {
 	backend: 'Java Backend',
+	frontend: 'JS FrontEnd',
 	web: 'Web',
 	infra: 'Infra',
 	security: 'Security',
 };
 
 export async function getStaticPaths() {
-	return ['backend', 'web', 'infra', 'security'].map((category) => ({ params: { category } }));
+	return ['backend', 'frontend', 'web', 'infra', 'security'].map((category) => ({ params: { category } }));
 }
 
 const { category } = Astro.params;
