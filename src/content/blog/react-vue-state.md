@@ -1,7 +1,7 @@
 ---
 title: 상태(state) — React useState vs Vue ref, 화면을 살아있게
 description: "값이 바뀌면 화면이 자동으로 다시 그려지는 '상태'. 그냥 변수와 뭐가 다른지, React는 명시적으로(useState·setState) Vue는 반응형으로(ref·data) 다루는 차이를, 함수형·클래스·Composition·Options 네 스타일의 카운터로 정리한다."
-pubDate: 2026-08-09T16:00:00
+pubDate: 2026-08-02
 category: frontend
 ---
 

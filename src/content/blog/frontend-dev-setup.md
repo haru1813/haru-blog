@@ -1,7 +1,7 @@
 ---
 title: React·Vue 개발환경 세팅 — Vite로 시작하기
 description: "React와 Vue 프로젝트를 실제로 만들어 띄우는 법. Node.js·npm 준비, 요즘 표준 빌드 도구 Vite로 React/Vue 프로젝트 생성, 폴더 구조, 개발 서버 실행(npm run dev)까지 — 손으로 시작하는 첫걸음을 정리한다."
-pubDate: 2026-08-09T21:00:00
+pubDate: 2026-08-07
 category: frontend
 parent: frontend-spa-ssr
 ---

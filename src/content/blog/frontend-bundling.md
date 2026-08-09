@@ -1,7 +1,7 @@
 ---
 title: 번들링과 번들러 — 웹팩·Vite가 하는 일
 description: "개발할 땐 파일 수십 개, 배포할 땐 하나로. 여러 JS·CSS를 묶는 번들링이 무엇이고 왜 필요한지, 번들러(웹팩·Vite)가 하는 일(번들링·트랜스파일·최적화), 웹팩에서 Vite로 넘어온 이유, 그리고 이게 React·Vue 공통인 이유를 백엔드의 Gradle→JAR에 빗대 정리한다."
-pubDate: 2026-08-09T20:00:00
+pubDate: 2026-08-06
 category: frontend
 ---
 

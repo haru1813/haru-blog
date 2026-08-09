@@ -1,7 +1,7 @@
 ---
 title: React vs Vue — 무엇이 다르고 왜 쓰나
 description: "같은 SPA 도구인데 접근이 다른 React와 Vue. 라이브러리 vs 프레임워크, JSX vs 템플릿, 명시적 vs 반응형이라는 세 갈래 차이를 짚고, 각각을 언제·왜 선택하는지(생태계·러닝커브·용도)까지 정리한다."
-pubDate: 2026-08-09T22:00:00
+pubDate: 2026-08-08
 category: frontend
 parent: frontend-spa-ssr
 ---
